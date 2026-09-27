@@ -107,33 +107,34 @@ No paid service anywhere. No Anthropic, Resend or Vercel.
 ### 5.1 Site
 
 - Astro (static output), TypeScript, no UI framework. Tokens → `src/styles/tokens.css` generated from a copied `tokens.json` (studio on `:root`, neon-night on `[data-theme="neon-night"]`).
-- Content collection `events` (JSON, zod schema). Only `status: "live"` events render. Art forms and packages in `src/data/`.
+- Content collection `events` (JSON, zod schema). Art forms and packages in `src/data/`.
 - Upcoming/past split at build time and re-checked in the browser against the current IST date (so a stale build never shows a past event as upcoming).
 - Images: `astro:assets` with responsive widths, WebP.
 - Hosting: **GitHub Pages**, deployed by `.github/workflows/deploy.yml` on every push to `main`. Custom domain added later by Chetan (CNAME).
 
 ### 5.2 Event schema
 
+Live events: `src/content/events/{id}.json` (only live events live here; every file renders).
+
 ```ts
 {
-  id: string;                 // slug: {artform}-{yyyy-mm-dd}-{hhmm}
-  status: "live" | "draft";
+  id: string;                 // {artform-slug}-{yyyy-mm-dd}-{hhmm} in IST
   title: string;              // "Kinusaiga Workshop"
   artForm: string;            // "Kinusaiga"
   start: string;              // ISO, +05:30 offset
   end: string | null;
   price: number | null;       // INR; null = "Ask for fee"
   includes: string[];         // ["All materials", "Frame", "Refreshments"]
-  venue: string;              // default studio address
-  description: string;        // 1–2 sentences taken from the caption's "what it is" lines
-  image: string | null;       // repo path to downloaded post image
-  source: { postId: string; permalink: string; postedAt: string };
-  sourcePostIds: string[];    // all posts merged into this event
-  draftIssue?: number;        // GitHub issue number while status is draft
+  venue: string;              // canonical studio name when the caption names the studio
+  description: string;        // first "what it is" paragraph of the caption
+  image: string | null;       // /images/events/{id}.jpg, else the art-form photo is used
+  sources: { postId: string; permalink: string; postedAt: string }[];  // every post merged into this event
 }
 ```
 
-Plus `data/instagram-state.json`: `{ seenPostIds: string[], lastRunAt, consecutiveFailures }`.
+Drafts: `data/drafts/draft-{postId}.json` = `{ id, event: Partial<fields>, sources, reasons, caption, draftIssue }`. Drafts are never read by the site.
+
+State: `data/instagram-state.json` = `{ seenPostIds: string[], lastRunAt, consecutiveFailures }`.
 
 ### 5.3 instagram-sync units (`scripts/instagram-sync/`)
 
@@ -142,7 +143,7 @@ Plus `data/instagram-state.json`: `{ seenPostIds: string[], lastRunAt, consecuti
 | `instagram.ts` | token → latest 25 media (id, caption, media_url/thumbnail_url, permalink, timestamp, media_type); refresh the long-lived token every run (free endpoint) |
 | `parse.ts` | caption + today → `Extraction`. **Rule-based, no model.** Reads the details block: date (🗓️/📅 or "Date:" line: "Saturday, 19th Sept", "Sunday, 6 September 2026", "Sun 20 Sept"), time (⏰ or "Time:" / "5:30 - 7:30 PM"), venue (📍), price ("₹1,299", "Rs 1299", "1299/-", "Ask for the FEE" → null), includes ("All materials", "Frame", "Refreshments"), art form (matched against the known art-form list + "Paper Collage", "Denim"). Announcement signals: a future date + time + booking cue (DM/call/book/reserve). Ignore signals: thank-you/gratitude/"successfully completed"/"stay tuned" with no date |
 | `llm.ts` | caption + today → `Extraction`, only when `parse` returns `confidence: "low"` with a date-like token present. Calls a local Ollama server (`qwen2.5:3b-instruct`) with JSON-schema output. Result is always forced to `confidence: "low"` (so it can only produce drafts, never auto-publish) |
-| `classify.ts` | extraction + today → `live` / `draft` / `ignore` (draft if confidence low, date missing/past, or start time missing) |
+| `classify.ts` | extraction → `live` / `draft` / `ignore` (ignore if not an announcement; draft if confidence low or any required field missing). Confident posts for dates that have passed still go live, so they fill "Recently" |
 | `dedupe.ts` | candidate + existing events → `create` / `update(id)` / `skip` (match: same artForm + same local date + same start time; update keeps earliest id, merges sourcePostIds, newer fields win) |
 | `removal.ts` | a source post counts as deleted when its `postedAt` is newer than the oldest post in the latest fetch (so it should have appeared) and its id is absent. An upcoming event whose every source post is deleted → delete its file. Past events are never removed |
 | `store.ts` | read/write event files, image download, state file |
@@ -155,8 +156,8 @@ Shared: `src/lib/whatsappLink.ts`, `src/lib/eventDates.ts` (IST formatting, upco
 
 ### 5.4 Workflows (all free GitHub Actions)
 
-- `instagram-sync.yml`: cron `30 2 * * *` and `30 14 * * *` (08:00 and 20:00 IST) + `workflow_dispatch`. Installs Ollama and pulls the model **only if** `parse` asked for the fallback (model cached with `actions/cache`). Commits with the built-in `GITHUB_TOKEN`, which then triggers `deploy.yml`.
-- `review-draft.yml`: on `issues: labeled`. Label `publish` → set the event's `status: "live"`, commit, close issue. Label `discard` → delete the draft file, add post id to `seenPostIds`, close issue. Idempotent.
+- `instagram-sync.yml`: cron `30 2 * * *` and `30 14 * * *` (08:00 and 20:00 IST) + `workflow_dispatch`. Installs Ollama and pulls the model **only if** `parse` asked for the fallback (model cached with `actions/cache`). Commits with the built-in `GITHUB_TOKEN`, then runs `gh workflow run deploy.yml` (pushes made with `GITHUB_TOKEN` don't trigger workflows). It deploys after every successful run, so past workshops move to "Recently" even when nothing changed.
+- `review-draft.yml`: on `issues: labeled`. Label `publish` → move the draft into `src/content/events/` (refused with a comment naming missing fields if incomplete), commit, deploy, close issue. Label `discard` → delete the draft file, add post id to `seenPostIds`, close issue. Idempotent.
 - `deploy.yml`: build Astro, deploy to Pages.
 
 Secrets: `IG_ACCESS_TOKEN` (free Meta token) and `IG_TOKEN_PAT` (free fine-grained GitHub token, scope "Secrets: write" on this repo only, used solely to save a renewed Instagram token when the refresh returns a new string). Nothing else.
