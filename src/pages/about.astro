@@ -3,7 +3,7 @@ import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Button from '../components/Button.astro';
 import { whatsappLink } from '../lib/whatsappLink';
-import portrait from '../assets/photos/hardy-sandhu-sip-paint.jpg';
+import portrait from '../assets/photos/balpreet-portrait.jpg';
 import blossom from '../assets/logos/sv-blossom-neon.svg';
 const timeline = [
   { when: 'Childhood', what: 'A daydreamer at a first-floor window above a busy market, watching festivals, patterns and people.' },
@@ -35,7 +35,7 @@ const values = [
     </ol>
   </section>
 
-  <section class="section values-wrap" aria-labelledby="values-h">
+  <section class="section values-wrap reveal" aria-labelledby="values-h">
     <div class="container">
       <h2 id="values-h" class="headline">What the studio stands for</h2>
       <ul class="grid grid--3 values" data-testid="values">
@@ -53,7 +53,7 @@ const values = [
 <style>
   .intro { display: grid; gap: var(--space-8); align-items: center; }
   @media (min-width: 768px) { .intro { grid-template-columns: 240px 1fr; } }
-  .portrait { width: 200px; height: 200px; border-radius: var(--radius-pill); object-fit: cover; object-position: 28% 14%; }
+  .portrait { width: 200px; height: 200px; border-radius: var(--radius-pill); object-fit: cover; object-position: 50% 35%; }
   @media (min-width: 768px) { .portrait { width: 240px; height: 240px; } }
   .timeline { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-6); border-left: 2px solid var(--line); }
   .timeline li { padding-left: var(--space-6); position: relative; }

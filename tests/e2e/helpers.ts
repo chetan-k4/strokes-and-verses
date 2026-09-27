@@ -20,6 +20,10 @@ export async function expectNoHorizontalScroll(page: Page) {
 }
 
 export async function checkA11y(page: Page) {
+  // Let any in-flight `.reveal` opacity transition (≤280ms) settle first, so axe
+  // doesn't scan a mid-transition frame and report the blended, transient colour
+  // as a contrast violation.
+  await page.waitForTimeout(350);
   const results = await new AxeBuilder({ page }).analyze();
   const serious = results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
   expect(serious, JSON.stringify(serious.map((v) => [v.id, v.nodes.map((n) => n.target)]), null, 2)).toEqual([]);

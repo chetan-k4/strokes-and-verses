@@ -38,7 +38,7 @@ const ways = [
     </div>
   </section>
 
-  <section class="section container" data-testid="home-upcoming" aria-labelledby="next-h">
+  <section class="section container reveal" data-testid="home-upcoming" aria-labelledby="next-h">
     <p class="label">On the calendar</p>
     <h2 id="next-h" class="headline">Upcoming workshops</h2>
     <div class="grid grid--3" data-upcoming-list>{next.map((e) => <EventCard event={e} compact />)}</div>
@@ -48,7 +48,7 @@ const ways = [
     <p class="more"><Button href={url('/workshops')} variant="outline">See all workshops</Button></p>
   </section>
 
-  <section class="section ways-wrap">
+  <section class="section ways-wrap reveal">
     <div class="container">
       <p class="label">Three ways to learn</p>
       <h2 class="headline">Find your way in</h2>
@@ -64,7 +64,7 @@ const ways = [
     </div>
   </section>
 
-  <section class="section container loved" data-testid="loved-by" aria-labelledby="loved-h">
+  <section class="section container loved reveal" data-testid="loved-by" aria-labelledby="loved-h">
     <Image class="loved-photo" src={hardy} alt="Balpreet with singer Hardy Sandhu at the Sip & Paint workshop" widths={[320, 480]} sizes="(min-width: 768px) 320px, 70vw" />
     <div>
       <p class="label">Loved by</p>
@@ -75,7 +75,7 @@ const ways = [
     </div>
   </section>
 
-  <section class="section container founder" data-testid="founder">
+  <section class="section container founder reveal" data-testid="founder">
     <p class="label">The artist</p>
     <h2 class="headline">“I have lived all my life with colours, brushes and blank canvases.”</h2>
     <p>Balpreet Kaur ran hospital projects and fashion boutiques before building Strokes &amp; Verses, an eco-conscious studio where art is for everyone.</p>

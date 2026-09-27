@@ -51,6 +51,20 @@ a { color: var(--neon); }
 @media (min-width: 640px) { .grid--2 { grid-template-columns: repeat(2, 1fr); } .grid--3 { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 960px) { .grid--3 { grid-template-columns: repeat(3, 1fr); } }
 
+/* Reveal: only hides content once JS has marked the page as motion-capable. */
+.js-motion .reveal { opacity: 0; transform: translateY(8px); transition: opacity 280ms ease-out, transform 280ms ease-out; }
+.js-motion .reveal.is-visible { opacity: 1; transform: none; }
+
+@keyframes sv-light-up {
+  0% { opacity: 0.25; filter: drop-shadow(0 0 0 transparent); }
+  35% { opacity: 1; filter: drop-shadow(0 0 18px var(--neon-glow)); }
+  45% { opacity: 0.55; }
+  60%, 100% { opacity: 1; filter: drop-shadow(0 0 10px var(--neon-glow)); }
+}
+.hero-mark { animation: sv-light-up 900ms ease-out 150ms 1 both; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
+  .hero-mark { filter: drop-shadow(0 0 10px var(--neon-glow)); }
+  .js-motion .reveal { opacity: 1; transform: none; }
 }
