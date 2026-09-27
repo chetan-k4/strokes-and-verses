@@ -13,8 +13,29 @@ beforeEach(() => {
   for (const d of [p.eventsDir, p.draftsDir, p.imagesDir, join(root, 'data')]) mkdirSync(d, { recursive: true });
 });
 
+describe('store — missing directories', () => {
+  it('creates the events/drafts/state directories on write if they were deleted (e.g. git dropped an empty folder)', () => {
+    const root = mkdtempSync(join(tmpdir(), 'sv-nodir-'));
+    const fresh = defaultPaths(root);
+    const draft = { id: 'draft-9', event: {}, sources: ev.sources, reasons: ['x'], caption: 'c' };
+    expect(() => applyChanges(fresh, {
+      writeEvents: [ev], deleteEvents: [], writeDrafts: [draft], deleteDrafts: [],
+      state: { seenPostIds: [], lastRunAt: null, consecutiveFailures: 0 },
+    })).not.toThrow();
+    expect(readEvents(fresh)).toEqual([ev]);
+    expect(readDrafts(fresh)).toEqual([draft]);
+  });
+
+  it('creates the images directory before writing a downloaded image', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'sv-nodir-img-'));
+    const fresh = defaultPaths(root);
+    const fake = (async () => new Response(new Uint8Array([1, 2, 3]))) as typeof fetch;
+    await expect(downloadImage(fresh, 'https://cdn/x.jpg', 'e1', fake)).resolves.toBe('/images/events/e1.jpg');
+  });
+});
+
 describe('store', () => {
-  it('defaults state when the file is missing', () => expect(readState(p)).toEqual({ seenPostIds: [], lastRunAt: null, consecutiveFailures: 0 }));
+  it('defaults state when the file is missing', () => expect(readState(p)).toEqual({ seenPostIds: [], lastRunAt: null, consecutiveFailures: 0, lastTokenRefreshAt: null }));
   it('writes and reads back events, drafts and state', () => {
     const draft = { id: 'draft-9', event: {}, sources: ev.sources, reasons: ['x'], caption: 'c', draftIssue: 3 };
     const state = { seenPostIds: ['a'], lastRunAt: '2026-09-28T08:00:00+05:30', consecutiveFailures: 0 };

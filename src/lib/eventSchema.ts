@@ -38,6 +38,7 @@ export const StateSchema = z.object({
   seenPostIds: z.array(z.string()),
   lastRunAt: isoWithOffset.nullable(),
   consecutiveFailures: z.number().int().min(0),
+  lastTokenRefreshAt: isoWithOffset.nullable().optional(),
 });
 
 export type Source = z.infer<typeof SourceSchema>;

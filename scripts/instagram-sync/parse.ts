@@ -38,8 +38,16 @@ function findDate(body: string, postedAt: string) {
   const month = MONTHS.indexOf(m[2].toLowerCase().slice(0, 3)) + 1;
   const posted = istParts(postedAt);
   let year = m[3] ? +m[3] : posted.year;
-  const postedKey = `${posted.year}-${pad(posted.month)}-${pad(posted.day)}`;
-  if (!m[3] && `${year}-${pad(month)}-${pad(day)}` < postedKey) year += 1;
+  if (!m[3]) {
+    // No explicit year: only roll into next year when the yearless date is well
+    // (>60 days) BEFORE the post date — the Dec-posted/Jan-workshop case. A date
+    // only a few days before the post (e.g. a recap caption for a workshop that
+    // just happened) stays in the post's own year instead of jumping to next year.
+    const postedUtc = Date.UTC(posted.year, posted.month - 1, posted.day);
+    const candidateUtc = Date.UTC(year, month - 1, day);
+    const daysBefore = (postedUtc - candidateUtc) / 86_400_000;
+    if (daysBefore > 60) year += 1;
+  }
   return `${year}-${pad(month)}-${pad(day)}`;
 }
 

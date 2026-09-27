@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseCaption } from '../../scripts/instagram-sync/parse';
 import { matchArtForms } from '../../scripts/instagram-sync/artForms';
+import { splitEvents } from '../../src/lib/eventDates';
 import { fixture, fixtures } from './fixtures';
 
 const parse = (name: string) => { const f = fixture(name); return parseCaption(f.caption, f.postedAt); };
@@ -74,6 +75,19 @@ describe('parseCaption — prices, times, years', () => {
   });
   it('rolls the year forward for January dates posted in December', () => {
     expect(parseCaption(wrap('🗓️ Saturday, 10th Jan | 5 - 7 PM'), '2026-12-20T10:00:00+05:30').event!.start).toBe('2027-01-10T17:00:00+05:30');
+  });
+  it('does not roll a recap date forward into next year just because it is a day or two before the post', () => {
+    const caption = 'Kinusaiga workshop on 6 Sept, 3:30 - 5:30 PM was magical. DM to book the next one!';
+    const x = parseCaption(caption, '2026-09-07T10:00:00+05:30');
+    expect(x.event!.start).toBe('2026-09-06T15:30:00+05:30');
+    expect(x.event!.start).not.toMatch(/^2027/);
+  });
+  it('a recap dated just before the post is not an upcoming event once now has passed it', () => {
+    const caption = 'Kinusaiga workshop on 6 Sept, 3:30 - 5:30 PM was magical. DM to book the next one!';
+    const x = parseCaption(caption, '2026-09-07T10:00:00+05:30');
+    const now = new Date('2026-09-08T00:00:00+05:30');
+    const { upcoming } = splitEvents([{ start: x.event!.start!, end: x.event!.end ?? null }], now);
+    expect(upcoming).toHaveLength(0);
   });
   it('reads a single start time', () => {
     expect(parseCaption(wrap('🗓️ Sunday, 5 October\n⏰ 4 PM onwards'), posted).event).toMatchObject({ start: '2026-10-05T16:00:00+05:30', end: null });
