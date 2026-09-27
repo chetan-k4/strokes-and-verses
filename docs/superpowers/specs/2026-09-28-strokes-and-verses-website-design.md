@@ -183,6 +183,6 @@ Online payments, seat counts, chat-based event editing, shop checkout, CMS/admin
 1. Create GitHub repo; connect Vercel.
 2. Meta developer app → Instagram API with Instagram Login → long-lived token for @strokesandverses.
 3. Anthropic API key, Resend account (verified sender domain once domain is bought).
-4. Fill `OWNER_EMAILS` in `site.config.ts`; add secrets.
+4. `OWNER_EMAILS` = owner-email-removed (set in `site.config.ts`); add secrets.
 5. Buy domain, point to Vercel.
 6. Optional: send a dedicated portrait of Balpreet.
