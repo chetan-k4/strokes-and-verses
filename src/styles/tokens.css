@@ -1,0 +1,54 @@
+/* Generated from content/brand/tokens.json by scripts/build-tokens.ts. Do not edit. */
+:root {
+  --canvas: #fbf6ef;
+  --paper: #fffdf9;
+  --blush: #f3b5a5;
+  --blush-soft: #fbe3db;
+  --neon: #c2185b;
+  --neon-glow: #ff5ca8;
+  --on-neon: #ffffff;
+  --ink: #231b1b;
+  --ink-muted: #6b5b57;
+  --on-blush: #231b1b;
+  --sunflower: #f4c430;
+  --on-sunflower: #231b1b;
+  --line: #e7d9ce;
+  --line-strong: #8a7670;
+  --focus-ring: var(--neon);
+  --shadow-soft: 0 8px 24px rgba(35,27,27,0.10);
+  --shadow-glow: 0 0 0 1px rgba(194,24,91,0.20), 0 0 24px rgba(255,92,168,0.35);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --radius-sm: 6px;
+  --radius-md: 14px;
+  --radius-lg: 28px;
+  --radius-pill: 999px;
+  --font-script: Sacramento, "Brush Script MT", cursive;
+  --font-serif: Fraunces, Georgia, serif;
+  --font-sans: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+}
+[data-theme="neon-night"] {
+  --canvas: #1c1616;
+  --paper: #2a2121;
+  --blush: #f3b5a5;
+  --blush-soft: #3a2a2a;
+  --neon: #ff5ca8;
+  --neon-glow: #ff8cc4;
+  --on-neon: #1c1616;
+  --ink: #fbf1ea;
+  --ink-muted: #c4b1aa;
+  --on-blush: #231b1b;
+  --sunflower: #f4c430;
+  --on-sunflower: #231b1b;
+  --line: #3e3131;
+  --line-strong: #9a857e;
+  --focus-ring: var(--neon);
+  --shadow-soft: 0 8px 24px rgba(0,0,0,0.40);
+  --shadow-glow: 0 0 0 1px rgba(255,92,168,0.35), 0 0 32px rgba(255,92,168,0.55);
+}
