@@ -4,7 +4,8 @@ import { fetchRecentMedia, refreshToken } from './instagram';
 import { llmExtract } from './llm';
 import { ghCli } from './issues';
 import { defaultPaths, downloadImage, readState, applyChanges } from './store';
-import { sync, needsLlm } from './sync';
+import { sync, needsLlm, istIso } from './sync';
+import { shouldRefreshToken } from './tokenRefresh';
 
 async function main() {
   const token = process.env.IG_ACCESS_TOKEN;
@@ -19,16 +20,27 @@ async function main() {
     return;
   }
 
-  const refreshed = await refreshToken(token);
-  if (refreshed && refreshed !== token && process.env.RUNNER_TEMP) {
-    console.log(`::add-mask::${refreshed}`);
-    writeFileSync(join(process.env.RUNNER_TEMP, 'ig_token'), refreshed);
+  const now = new Date();
+  const state = readState(paths);
+  let tokenRefreshedAt: string | undefined;
+  if (shouldRefreshToken(state.lastTokenRefreshAt ?? null, now)) {
+    try {
+      const refreshed = await refreshToken(token);
+      if (refreshed && refreshed !== token && process.env.RUNNER_TEMP) {
+        console.log(`::add-mask::${refreshed}`);
+        writeFileSync(join(process.env.RUNNER_TEMP, 'ig_token'), refreshed);
+      }
+      tokenRefreshedAt = istIso(now);
+    } catch (e) {
+      console.warn(`token refresh failed: ${e instanceof Error ? e.message : String(e)}`);
+    }
   }
 
   const result = await sync({
-    media, now: new Date(), paths, gh: ghCli(),
+    media, now, paths, gh: ghCli(),
     llm: (caption, postedAt) => llmExtract(caption, postedAt),
     download: (url, id) => downloadImage(paths, url, id),
+    tokenRefreshedAt,
   });
   console.log(JSON.stringify(result, null, 2));
 }
