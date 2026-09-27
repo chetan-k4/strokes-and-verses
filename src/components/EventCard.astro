@@ -1,0 +1,46 @@
+---
+import { Image } from 'astro:assets';
+import type { Event } from '../lib/eventSchema';
+import DateStamp from './DateStamp.astro';
+import Button from './Button.astro';
+import { artFormByName } from '../data/artForms';
+import { formatLongDate, formatTimeRange } from '../lib/eventDates';
+import { whatsappLink } from '../lib/whatsappLink';
+import { url } from '../lib/url';
+import blossom from '../assets/logos/sv-blossom-neon.svg';
+
+interface Props { event: Event; compact?: boolean; upcoming?: boolean }
+const { event, compact = false, upcoming = true } = Astro.props;
+const artForm = artFormByName(event.artForm);
+const price = event.price === null ? 'Ask for fee' : `₹${event.price.toLocaleString('en-IN')}`;
+---
+<article class="card event" data-testid="event-card" data-end={event.end ?? event.start} data-upcoming={upcoming ? '' : undefined}>
+  <div class="media">
+    {event.image ? <img src={url(event.image)} alt="" loading="lazy" width="640" height="640" />
+      : artForm ? <Image src={artForm.image} alt="" widths={[360, 640]} sizes="(min-width: 960px) 360px, 100vw" />
+      : <div class="placeholder"><img src={blossom.src} alt="" width="72" height="72" /></div>}
+    <div class="stamp"><DateStamp iso={event.start} size={compact ? 'sm' : 'md'} /></div>
+  </div>
+  <div class="body">
+    <h3 class="title">{event.title}</h3>
+    <p class="when"><span>{formatLongDate(event.start)}</span> · <span>{formatTimeRange(event.start, event.end)}</span></p>
+    <p class="price">{price}</p>
+    {!compact && event.description && <p class="muted desc">{event.description}</p>}
+    {!compact && event.includes.length > 0 && <ul class="chips">{event.includes.map((i) => <li class="sv-chip">{i}</li>)}</ul>}
+    {upcoming && <Button href={whatsappLink({ kind: 'workshop', title: event.title, start: event.start })} external testId="book-event">Book on WhatsApp</Button>}
+  </div>
+</article>
+
+<style>
+  .event { display: flex; flex-direction: column; }
+  .media { position: relative; aspect-ratio: 4 / 3; background: var(--blush-soft); }
+  .media > :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .placeholder { width: 100%; height: 100%; display: grid; place-items: center; }
+  .stamp { position: absolute; left: var(--space-4); bottom: calc(-1 * var(--space-6)); }
+  .body { padding: var(--space-8) var(--space-6) var(--space-6); display: grid; gap: var(--space-2); justify-items: start; }
+  .title { font: 600 22px/28px var(--font-serif); margin: 0; }
+  .when { margin: 0; font-weight: 700; }
+  .price { margin: 0; color: var(--ink-muted); }
+  .desc { margin: 0; }
+  .chips { margin-block: var(--space-2); }
+</style>

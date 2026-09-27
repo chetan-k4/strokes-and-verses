@@ -1,0 +1,11 @@
+<script>
+  const now = Date.now();
+  document.querySelectorAll<HTMLElement>('[data-testid="event-card"][data-upcoming]').forEach((card) => {
+    if (Date.parse(card.dataset.end ?? '') < now) card.hidden = true;
+  });
+  document.querySelectorAll<HTMLElement>('[data-upcoming-list]').forEach((list) => {
+    const visible = list.querySelectorAll('[data-testid="event-card"]:not([hidden])').length;
+    const empty = list.parentElement?.querySelector<HTMLElement>('[data-empty-upcoming]');
+    if (empty) empty.hidden = visible > 0;
+  });
+</script>

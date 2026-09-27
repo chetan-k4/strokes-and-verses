@@ -1,6 +1,109 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import EventCard from '../components/EventCard.astro';
+import UpcomingGuard from '../components/UpcomingGuard.astro';
+import Button from '../components/Button.astro';
+import { loadEvents } from '../lib/events';
+import { whatsappLink } from '../lib/whatsappLink';
+import { url } from '../lib/url';
+import { site } from '../site.config';
+import mark from '../assets/logos/sv-mark-cream.svg';
+import hero from '../assets/art-forms/pearl-art.webp';
+import hardy from '../assets/photos/hardy-sandhu-sip-paint.jpg';
+import blossom from '../assets/logos/sv-blossom-neon.svg';
+const { upcoming } = await loadEvents();
+const next = upcoming.slice(0, 3);
+const ways = [
+  { title: 'Workshops', href: '/workshops', text: 'Two-hour sessions in a new art form, announced on Instagram. Come alone or bring a friend.' },
+  { title: 'One-off classes', href: '/classes', text: 'Pick any of nine art forms and book a private class, or plan one for your group.' },
+  { title: 'Learner packages', href: '/learn', text: 'Build real skills over 8 or 15 hour-long classes: drawing, sketching, acrylic, watercolour.' },
+];
 ---
-<BaseLayout title="Strokes & Verses" description="Art workshops and classes by Balpreet Kaur in Sector 37-B, Chandigarh.">
-  <section class="section container"><h1 class="display">Strokes &amp; Verses</h1></section>
+<BaseLayout title="Strokes & Verses" description="Art workshops, classes and learner packages by Balpreet Kaur in Sector 37-B, Chandigarh. Where art meets heart." theme="neon-night">
+  <section class="hero" data-theme="neon-night">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <h1 class="hero-title">
+          <img class="hero-mark" src={mark.src} alt="Strokes & Verses" width="220" height="220" />
+        </h1>
+        <p class="script tagline">Where art meets heart</p>
+        <p class="lede">A studio in Sector 37-B, Chandigarh where anyone, with no training, makes something they’re proud of, and leaves calmer than they came in.</p>
+        <div class="ctas">
+          <Button href={url('/workshops')} glow>See workshops</Button>
+          <Button href={whatsappLink({ kind: 'general' })} variant="outline" external testId="hero-cta">Ask on WhatsApp</Button>
+        </div>
+      </div>
+      <Image class="hero-photo" src={hero} alt="Three pearl art seascapes held up in front of the lit Strokes & Verses neon sign" widths={[480, 800]} sizes="(min-width: 960px) 480px, 100vw" loading="eager" />
+    </div>
+  </section>
+
+  <section class="section container" data-testid="home-upcoming" aria-labelledby="next-h">
+    <p class="label">On the calendar</p>
+    <h2 id="next-h" class="headline">Upcoming workshops</h2>
+    <div class="grid grid--3" data-upcoming-list>{next.map((e) => <EventCard event={e} compact />)}</div>
+    <div class="card empty" data-empty-upcoming hidden={next.length > 0}>
+      <p>New workshops are announced on Instagram first.</p>
+    </div>
+    <p class="more"><Button href={url('/workshops')} variant="outline">See all workshops</Button></p>
+  </section>
+
+  <section class="section ways-wrap">
+    <div class="container">
+      <p class="label">Three ways to learn</p>
+      <h2 class="headline">Find your way in</h2>
+      <ul class="grid grid--3 ways" data-testid="ways">
+        {ways.map((w) => (
+          <li class="card way">
+            <img src={blossom.src} alt="" width="36" height="36" />
+            <h3><a href={url(w.href)}>{w.title}</a></h3>
+            <p class="muted">{w.text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section container loved" data-testid="loved-by" aria-labelledby="loved-h">
+    <Image class="loved-photo" src={hardy} alt="Balpreet with singer Hardy Sandhu at the Sip & Paint workshop" widths={[320, 480]} sizes="(min-width: 768px) 320px, 70vw" />
+    <div>
+      <p class="label">Loved by</p>
+      <h2 id="loved-h" class="headline">Hardy Sandhu painted with us</h2>
+      <p class="title-italic">A private Sip &amp; Paint texture art party, led by Balpreet.</p>
+      <p>From birthday tables to corporate teams, we bring the studio to your people. Tell us the occasion and we’ll plan the art.</p>
+      <Button href={whatsappLink({ kind: 'group', artForm: 'Sip & Paint' })} variant="outline" external>Plan a group session</Button>
+    </div>
+  </section>
+
+  <section class="section container founder" data-testid="founder">
+    <p class="label">The artist</p>
+    <h2 class="headline">“I have lived all my life with colours, brushes and blank canvases.”</h2>
+    <p>Balpreet Kaur ran hospital projects and fashion boutiques before building Strokes &amp; Verses, an eco-conscious studio where art is for everyone.</p>
+    <a href={url('/about')}>Meet Balpreet</a>
+  </section>
+  <UpcomingGuard />
 </BaseLayout>
+
+<style>
+  .hero { padding-block: var(--space-12) var(--space-16); }
+  .hero-grid { display: grid; gap: var(--space-8); align-items: center; }
+  @media (min-width: 960px) { .hero-grid { grid-template-columns: 1.1fr 1fr; } }
+  .hero-title { margin: 0; }
+  .hero-mark { width: clamp(160px, 40vw, 220px); height: auto; }
+  .tagline { margin: var(--space-4) 0 0; }
+  .lede { max-width: 46ch; font-size: 18px; line-height: 28px; }
+  .ctas { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6); }
+  .hero-photo { border-radius: var(--radius-lg); width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
+  .more { margin-top: var(--space-6); }
+  .empty { padding: var(--space-6); }
+  .ways-wrap { background: var(--blush-soft); }
+  .ways { list-style: none; padding: 0; margin: 0; }
+  .way { padding: var(--space-6); display: grid; gap: var(--space-2); }
+  .way h3 { font: 600 22px/28px var(--font-serif); margin: 0; }
+  .way a { color: var(--ink); text-decoration-color: var(--neon); text-underline-offset: 4px; }
+  .way p { margin: 0; }
+  .loved { display: grid; gap: var(--space-8); align-items: center; }
+  @media (min-width: 768px) { .loved { grid-template-columns: 320px 1fr; } }
+  .loved-photo { border-radius: var(--radius-lg); width: min(320px, 70vw); aspect-ratio: 9 / 14; object-fit: cover; }
+  .founder { max-width: 720px; }
+</style>

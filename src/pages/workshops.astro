@@ -1,4 +1,44 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import EventCard from '../components/EventCard.astro';
+import UpcomingGuard from '../components/UpcomingGuard.astro';
+import Button from '../components/Button.astro';
+import { loadEvents } from '../lib/events';
+import { site } from '../site.config';
+const { upcoming, past } = await loadEvents();
+const recent = past.slice(0, 6);
 ---
-<BaseLayout title="Coming together" description="Strokes & Verses"><section class="section container"><h1 class="display">Coming together</h1></section></BaseLayout>
+<BaseLayout title="Workshops" description="Upcoming art workshops at Strokes & Verses, Sector 37-B, Chandigarh. All materials included, beginner friendly.">
+  <section class="section container">
+    <p class="label">Workshop calendar</p>
+    <h1 class="display">Come make something this week</h1>
+    <p class="title-italic">Beginner friendly. All materials included.</p>
+  </section>
+
+  <section class="container" data-testid="upcoming" aria-labelledby="upcoming-h">
+    <h2 id="upcoming-h" class="headline">Upcoming</h2>
+    <div class="grid grid--3" data-upcoming-list>
+      {upcoming.map((e) => <EventCard event={e} />)}
+    </div>
+    <div class="card empty" data-empty-upcoming hidden={upcoming.length > 0}>
+      <p class="headline">New workshops are announced on Instagram first</p>
+      <p class="muted">Follow along and you’ll hear the moment the next one opens.</p>
+      <Button href={site.instagramUrl} variant="outline" external>Follow {site.instagramHandle}</Button>
+    </div>
+  </section>
+
+  {recent.length > 0 && (
+    <section class="section container" data-testid="recent" aria-labelledby="recent-h">
+      <h2 id="recent-h" class="headline">Recently at the studio</h2>
+      <div class="grid grid--3 recent">
+        {recent.map((e) => <EventCard event={e} compact upcoming={false} />)}
+      </div>
+    </section>
+  )}
+  <UpcomingGuard />
+</BaseLayout>
+
+<style>
+  .empty { padding: var(--space-8) var(--space-6); display: grid; gap: var(--space-3); justify-items: start; }
+  .empty .headline, .empty p { margin: 0; }
+</style>
