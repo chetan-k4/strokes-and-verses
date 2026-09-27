@@ -8,7 +8,7 @@ const ALIASES: [RegExp, string][] = [
   [/boho\s*acrylic(\s*painting)?/gi, 'Boho Acrylic Painting'],
   [/(tin\s*)?embossing/gi, 'Tin Embossing'],
   [/paper\s*collage/gi, 'Paper Collage'],
-  [/denim/gi, 'Denim Pocket Frame'],
+  [/denim\s+(utility\s+)?pocket|pocket\s+frame|denim\s+upcycl\w*/gi, 'Denim Pocket Frame'],
   [/acrylic\s*painting/gi, 'Acrylic Painting'],
 ];
 

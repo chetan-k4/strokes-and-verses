@@ -12,6 +12,12 @@ describe('matchArtForms', () => {
   });
   it('handles KinuSaiGa spellings', () => expect(matchArtForms('KINUSAIGA and KinuSaiGa')).toEqual(['Kinusaiga']));
   it('returns several in canonical order, not order of appearance', () => expect(matchArtForms('old denim pockets, then Paper Collage')).toEqual(['Paper Collage', 'Denim Pocket Frame']));
+  it('does not treat a plain mention of denim clothing as the Denim Pocket Frame workshop', () => {
+    expect(matchArtForms('Wear your favourite denim jacket for this outdoor paint jam')).toEqual([]);
+  });
+  it('still matches the real double-art captions\' denim wording', () => {
+    expect(matchArtForms('old denim pockets')).toEqual(['Denim Pocket Frame']);
+  });
 });
 
 describe('parseCaption — announcements', () => {
