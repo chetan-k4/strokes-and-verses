@@ -12,6 +12,7 @@
     "preview": "astro preview",
     "tokens": "tsx scripts/build-tokens.ts",
     "test": "vitest run",
+    "test:llm": "LLM_LIVE=1 vitest run tests/unit/llm.live.test.ts",
     "test:e2e": "playwright test",
     "sync": "tsx scripts/instagram-sync/main.ts",
     "review-draft": "tsx scripts/review-draft.ts"
