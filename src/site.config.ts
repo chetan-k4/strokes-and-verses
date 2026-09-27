@@ -9,5 +9,4 @@ export const site = {
   address: '1066, Sector 37-B, Chandigarh 160036',
   mapUrl: 'https://maps.app.goo.gl/GLnZm4HAAXwFQrCx6',
   venue: 'Strokes & Verses Studio, Sector 37-B, Chandigarh',
-  ownerEmail: 'owner-email-removed',
 } as const;

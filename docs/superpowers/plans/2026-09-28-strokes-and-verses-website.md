@@ -276,7 +276,6 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Produces:
-  - `site` object: `{ name, whatsapp: '919501690208', whatsappDisplay: '+91 95016 90208', instagramUrl, instagramHandle: '@strokesandverses', addressLines: string[], address: string, mapUrl, venue: 'Strokes & Verses Studio, Sector 37-B, Chandigarh', ownerEmail: 'owner-email-removed', tagline: 'Where art meets heart' }`
   - `istParts(iso: string): { year: number; month: number; day: number; hour: number; minute: number; weekday: string }` (weekday `'Sat'`)
   - `resolveNow(value?: string): Date`
   - `splitEvents<T extends { start: string; end: string | null }>(events: T[], now: Date): { upcoming: T[]; past: T[] }` (upcoming ascending, past descending; an event is upcoming while `end ?? start` ≥ now)
@@ -396,7 +395,6 @@ export const site = {
   address: '1066, Sector 37-B, Chandigarh 160036',
   mapUrl: 'https://maps.app.goo.gl/GLnZm4HAAXwFQrCx6',
   venue: 'Strokes & Verses Studio, Sector 37-B, Chandigarh',
-  ownerEmail: 'owner-email-removed',
 } as const;
 ```
 

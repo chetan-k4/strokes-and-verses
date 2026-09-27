@@ -162,7 +162,7 @@ Shared: `src/lib/whatsappLink.ts`, `src/lib/eventDates.ts` (IST formatting, upco
 
 Secrets: `IG_ACCESS_TOKEN` (free Meta token) and `IG_TOKEN_PAT` (free fine-grained GitHub token, scope "Secrets: write" on this repo only, used solely to save a renewed Instagram token when the refresh returns a new string). Nothing else.
 
-Config (non-secret) in `site.config.ts`: WhatsApp number, site URL, Instagram handle, owner email `owner-email-removed` (shown nowhere; kept for future use; GitHub Issue notifications go to repo watchers: Chetan, plus Balpreet if she is added as a collaborator).
+Config (non-secret) in `site.config.ts`: WhatsApp number, site URL, Instagram handle (the owner's email is deliberately kept out of this public repo; GitHub Issue notifications go to repo watchers: Chetan, plus Balpreet if she is added as a collaborator).
 
 ## 6. Error handling
 
