@@ -1,4 +1,68 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '../components/Button.astro';
+import { whatsappLink } from '../lib/whatsappLink';
+import portrait from '../assets/photos/hardy-sandhu-sip-paint.jpg';
+import blossom from '../assets/logos/sv-blossom-neon.svg';
+const timeline = [
+  { when: 'Childhood', what: 'A daydreamer at a first-floor window above a busy market, watching festivals, patterns and people.' },
+  { when: 'Healthcare', what: 'MHA, then healthcare administrator at Fortis Mohali, running the Covid vaccination drive in 2020–21.' },
+  { when: 'Fashion', what: 'Founded Xpressions in Yamunanagar and The Wardrobe, a designer boutique in Chandigarh.' },
+  { when: 'Today', what: 'Strokes & Verses: paintings in Chandigarh galleries, eco-friendly crafts, workshops and commissions.' },
+];
+const values = [
+  { title: 'Kind to the planet', text: 'Natural and recycled materials, less waste, slow and mindful making.' },
+  { title: 'Conscious, not complicated', text: 'Clear steps, calm sessions, no jargon.' },
+  { title: 'Art for all', text: 'You don’t need to be “an artist”. Just come as you are.' },
+];
 ---
-<BaseLayout title="Coming together" description="Strokes & Verses"><section class="section container"><h1 class="display">Coming together</h1></section></BaseLayout>
+<BaseLayout title="About Balpreet" description="Balpreet Kaur, artist and founder of Strokes & Verses, an eco-conscious art studio in Chandigarh.">
+  <section class="section container intro">
+    <Image class="portrait" src={portrait} alt="Balpreet Kaur, founder of Strokes & Verses" widths={[240, 480]} sizes="240px" />
+    <div>
+      <p class="label">Founder</p>
+      <h1 class="display">Hi, I’m Balpreet</h1>
+      <p class="title-italic">“I have lived all my life with colours, brushes, colour strokes, and blank canvases waiting to be painted.”</p>
+      <p><strong>Strokes</strong> for the visual language I’ve spoken since childhood. <strong>Verses</strong> for the stories each piece tells.</p>
+    </div>
+  </section>
+
+  <section class="section container" aria-labelledby="path-h">
+    <h2 id="path-h" class="headline">The path here</h2>
+    <ol class="timeline" data-testid="timeline">
+      {timeline.map((t) => <li><p class="label">{t.when}</p><p>{t.what}</p></li>)}
+    </ol>
+  </section>
+
+  <section class="section values-wrap" aria-labelledby="values-h">
+    <div class="container">
+      <h2 id="values-h" class="headline">What the studio stands for</h2>
+      <ul class="grid grid--3 values" data-testid="values">
+        {values.map((v) => <li class="card"><img src={blossom.src} alt="" width="32" height="32" /><h3>{v.title}</h3><p class="muted">{v.text}</p></li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section container commissions">
+    <h2 class="headline">Paintings and commissions</h2>
+    <p>Balpreet’s paintings hang in galleries around Chandigarh. She also paints for homes, offices and events.</p>
+    <Button href={whatsappLink({ kind: 'general' })} variant="outline" external>Talk about a commission</Button>
+  </section>
+</BaseLayout>
+<style>
+  .intro { display: grid; gap: var(--space-8); align-items: center; }
+  @media (min-width: 768px) { .intro { grid-template-columns: 240px 1fr; } }
+  .portrait { width: 200px; height: 200px; border-radius: var(--radius-pill); object-fit: cover; object-position: 28% 14%; }
+  @media (min-width: 768px) { .portrait { width: 240px; height: 240px; } }
+  .timeline { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-6); border-left: 2px solid var(--line); }
+  .timeline li { padding-left: var(--space-6); position: relative; }
+  .timeline li::before { content: ''; position: absolute; left: -7px; top: 4px; width: 12px; height: 12px; border-radius: var(--radius-pill); background: var(--neon); }
+  .timeline p { margin: 0; max-width: 60ch; }
+  .values-wrap { background: var(--blush-soft); }
+  .values { list-style: none; padding: 0; margin: 0; }
+  .values li { padding: var(--space-6); display: grid; gap: var(--space-2); }
+  .values h3 { font: 600 22px/28px var(--font-serif); margin: 0; }
+  .values p { margin: 0; }
+  .commissions { max-width: 720px; }
+</style>

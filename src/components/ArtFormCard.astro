@@ -1,0 +1,29 @@
+---
+import { Image } from 'astro:assets';
+import Button from './Button.astro';
+import type { ArtForm } from '../data/artForms';
+import { whatsappLink } from '../lib/whatsappLink';
+interface Props { artForm: ArtForm }
+const { artForm: a } = Astro.props;
+const hours = a.hours === 1 ? '1 hour' : `${a.hours} hours`;
+---
+<article class="card art" data-testid="art-form-card">
+  <Image src={a.image} alt={a.alt} widths={[360, 640]} sizes="(min-width: 960px) 360px, (min-width: 640px) 50vw, 100vw" />
+  <div class="body">
+    <h3>{a.name}</h3>
+    <p class="facts"><span>{hours}</span> · <span>₹{a.price.toLocaleString('en-IN')}</span></p>
+    <p class="muted small">{a.includesNote}</p>
+    <div class="actions">
+      <Button href={whatsappLink({ kind: 'private', artForm: a.name })} external testId="book-private">Book a private class</Button>
+      <Button href={whatsappLink({ kind: 'group', artForm: a.name })} variant="outline" external testId="book-group">Plan a group</Button>
+    </div>
+  </div>
+</article>
+<style>
+  .art :global(img) { width: 100%; aspect-ratio: 1; object-fit: cover; }
+  .body { padding: var(--space-6); display: grid; gap: var(--space-2); }
+  h3 { font: 600 22px/28px var(--font-serif); margin: 0; }
+  .facts { margin: 0; font-weight: 700; }
+  .body p { margin: 0; }
+  .actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+</style>

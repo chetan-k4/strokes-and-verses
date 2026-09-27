@@ -1,4 +1,22 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '../components/Button.astro';
+import { site } from '../site.config';
+import blossom from '../assets/logos/sv-blossom-neon.svg';
 ---
-<BaseLayout title="Coming together" description="Strokes & Verses"><section class="section container"><h1 class="display">Coming together</h1></section></BaseLayout>
+<BaseLayout title="Shop" description="The Strokes & Verses shop is coming soon: hand-painted utility pieces and wearables." theme="neon-night">
+  <section class="soon" data-theme="neon-night">
+    <div class="container inner">
+      <img class="blossom" src={blossom.src} alt="" width="96" height="96" />
+      <p class="label">Shop</p>
+      <h1 class="display">Coming soon</h1>
+      <p class="title-italic">Hand-painted utility pieces and wearables, made slowly in the studio.</p>
+      <Button href={site.instagramUrl} glow external>Follow for the first drop</Button>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .soon { min-height: 70vh; display: grid; place-items: center; padding-block: var(--space-16); }
+  .inner { display: grid; justify-items: center; text-align: center; gap: var(--space-4); }
+  .blossom { filter: drop-shadow(0 0 16px var(--neon-glow)); }
+</style>
