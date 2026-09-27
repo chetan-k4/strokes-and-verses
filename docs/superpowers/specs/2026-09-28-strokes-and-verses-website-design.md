@@ -2,6 +2,8 @@
 
 Date: 2026-09-28 · Owner: Chetan · Maintainer: Balpreet (via Instagram only)
 
+**Hard constraint: zero running cost and no paid services or paid API keys.** Everything is free and open source: GitHub (repo, Actions, Pages, Issues), the free Instagram API, and a local open-source model run inside the Action.
+
 ## 1. Goal
 
 A website for Strokes & Verses, Balpreet Kaur's art studio in Sector 37-B, Chandigarh, that:
@@ -10,7 +12,7 @@ A website for Strokes & Verses, Balpreet Kaur's art studio in Sector 37-B, Chand
 2. Keeps its workshop calendar up to date **without Balpreet doing anything beyond posting on Instagram**.
 3. Sends every booking to WhatsApp.
 
-Success: a workshop posted on Instagram appears on the site within 12 hours with correct date, time and details, or reaches the owners as a one-tap draft; every Book button opens WhatsApp with a correct pre-filled message; the site passes accessibility checks and renders without horizontal scroll at 360px.
+Success: a workshop posted on Instagram appears on the site within 12 hours with correct date, time and details, or reaches Chetan as a draft GitHub Issue; every Book button opens WhatsApp with a correct pre-filled message; the site passes accessibility checks and renders without horizontal scroll at 360px.
 
 ## 2. Brand source
 
@@ -85,29 +87,30 @@ Motion (Emil Kowalski principles): purposeful and restrained. Hero neon light-up
 ## 5. Architecture
 
 ```
-Instagram ──(Graph API, 2×/day)──▶ GitHub Action: instagram-sync
-                                        │ extract (Claude Sonnet 5, caption+image)
-                                        │ classify → live / draft / ignore
-                                        │ dedupe  → create / update / skip
-                                        ▼
-                         commit src/content/events/*.json  ──▶ Vercel build ──▶ site
-                                        │ (draft)
-                                        ▼
-                           Resend email ──▶ owner taps Publish/Discard
-                                                   │
-                                  Vercel function /api/review (HMAC-signed link)
-                                                   │ GitHub API commit
-                                                   ▼
-                                              Vercel build
+Instagram ──(free Graph API token, 2×/day)──▶ GitHub Action: instagram-sync
+                                                 │ parse   (rule-based, her caption template)
+                                                 │ llm     (fallback: Ollama + Qwen 2.5 3B, local, open source)
+                                                 │ classify → live / draft / ignore
+                                                 │ dedupe   → create / update / skip
+                                                 ▼
+                                commit src/content/events/*.json ──▶ Pages build ──▶ site
+                                                 │ (draft)
+                                                 ▼
+                                   GitHub Issue "Draft: {title}" (GitHub emails Chetan, free)
+                                                 │ Chetan adds label `publish` (or `discard`)
+                                                 ▼
+                                   GitHub Action: review-draft → commit → Pages build
 ```
+
+No paid service anywhere. No Anthropic, Resend or Vercel.
 
 ### 5.1 Site
 
 - Astro (static output), TypeScript, no UI framework. Tokens → `src/styles/tokens.css` generated from a copied `tokens.json` (studio on `:root`, neon-night on `[data-theme="neon-night"]`).
-- Content collection `events` (JSON, zod schema). Art forms and packages in `src/data/`.
+- Content collection `events` (JSON, zod schema). Only `status: "live"` events render. Art forms and packages in `src/data/`.
 - Upcoming/past split at build time and re-checked in the browser against the current IST date (so a stale build never shows a past event as upcoming).
 - Images: `astro:assets` with responsive widths, WebP.
-- Hosting: Vercel, connected to GitHub `main`. Domain connected later by Chetan.
+- Hosting: **GitHub Pages**, deployed by `.github/workflows/deploy.yml` on every push to `main`. Custom domain added later by Chetan (CNAME).
 
 ### 5.2 Event schema
 
@@ -117,15 +120,16 @@ Instagram ──(Graph API, 2×/day)──▶ GitHub Action: instagram-sync
   status: "live" | "draft";
   title: string;              // "Kinusaiga Workshop"
   artForm: string;            // "Kinusaiga"
-  start: string;              // ISO, Asia/Kolkata offset
+  start: string;              // ISO, +05:30 offset
   end: string | null;
   price: number | null;       // INR; null = "Ask for fee"
   includes: string[];         // ["All materials", "Frame", "Refreshments"]
   venue: string;              // default studio address
-  description: string;        // 1–2 sentences, brand voice
+  description: string;        // 1–2 sentences taken from the caption's "what it is" lines
   image: string | null;       // repo path to downloaded post image
   source: { postId: string; permalink: string; postedAt: string };
   sourcePostIds: string[];    // all posts merged into this event
+  draftIssue?: number;        // GitHub issue number while status is draft
 }
 ```
 
@@ -135,54 +139,60 @@ Plus `data/instagram-state.json`: `{ seenPostIds: string[], lastRunAt, consecuti
 
 | Unit | Input → Output |
 |---|---|
-| `instagram.ts` | token → latest 25 media (id, caption, media_url/thumbnail_url, permalink, timestamp, media_type); refresh long-lived token when older than 7 days, write back to GitHub secret |
-| `extract.ts` | caption + image + today's date → `{ isAnnouncement, event?, confidence: "high"|"low", reasons[] }` via Claude tool-use with a strict JSON schema |
+| `instagram.ts` | token → latest 25 media (id, caption, media_url/thumbnail_url, permalink, timestamp, media_type); refresh the long-lived token every run (free endpoint) |
+| `parse.ts` | caption + today → `Extraction`. **Rule-based, no model.** Reads the details block: date (🗓️/📅 or "Date:" line: "Saturday, 19th Sept", "Sunday, 6 September 2026", "Sun 20 Sept"), time (⏰ or "Time:" / "5:30 - 7:30 PM"), venue (📍), price ("₹1,299", "Rs 1299", "1299/-", "Ask for the FEE" → null), includes ("All materials", "Frame", "Refreshments"), art form (matched against the known art-form list + "Paper Collage", "Denim"). Announcement signals: a future date + time + booking cue (DM/call/book/reserve). Ignore signals: thank-you/gratitude/"successfully completed"/"stay tuned" with no date |
+| `llm.ts` | caption + today → `Extraction`, only when `parse` returns `confidence: "low"` with a date-like token present. Calls a local Ollama server (`qwen2.5:3b-instruct`) with JSON-schema output. Result is always forced to `confidence: "low"` (so it can only produce drafts, never auto-publish) |
 | `classify.ts` | extraction + today → `live` / `draft` / `ignore` (draft if confidence low, date missing/past, or start time missing) |
 | `dedupe.ts` | candidate + existing events → `create` / `update(id)` / `skip` (match: same artForm + same local date + same start time; update keeps earliest id, merges sourcePostIds, newer fields win) |
-| `store.ts` | read/write event files, image download, state file |
 | `removal.ts` | a source post counts as deleted when its `postedAt` is newer than the oldest post in the latest fetch (so it should have appeared) and its id is absent. An upcoming event whose every source post is deleted → delete its file. Past events are never removed |
-| `notify.ts` | draft → email to `OWNER_EMAILS` with signed Publish / Discard links; failure alert after 2 consecutive failed runs |
-| `run.ts` | orchestrates; exit non-zero on failure; commits via `git` in the Action |
+| `store.ts` | read/write event files, image download, state file |
+| `issues.ts` | draft → open GitHub Issue (title, parsed fields, caption, permalink, labels `draft`) via `gh` CLI with the built-in `GITHUB_TOKEN`; failure alert issue after 2 consecutive failed runs |
+| `run.ts` | orchestrates; computes all changes first, then writes (atomic); exits non-zero on failure |
+
+`Extraction` = `{ isAnnouncement: boolean; confidence: "high" | "low"; event?: Partial<Event>; reasons: string[] }`.
 
 Shared: `src/lib/whatsappLink.ts`, `src/lib/eventDates.ts` (IST formatting, upcoming/past).
 
-### 5.4 Workflow
+### 5.4 Workflows (all free GitHub Actions)
 
-`.github/workflows/instagram-sync.yml`: cron `30 2 * * *` and `30 14 * * *` (08:00 and 20:00 IST) + `workflow_dispatch`. Secrets: `IG_ACCESS_TOKEN`, `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `REVIEW_LINK_SECRET`, `GH_SECRETS_TOKEN` (to rotate IG token). Config (non-secret) in `site.config.ts`: `OWNER_EMAILS`, WhatsApp number, site URL.
+- `instagram-sync.yml`: cron `30 2 * * *` and `30 14 * * *` (08:00 and 20:00 IST) + `workflow_dispatch`. Installs Ollama and pulls the model **only if** `parse` asked for the fallback (model cached with `actions/cache`). Commits with the built-in `GITHUB_TOKEN`, which then triggers `deploy.yml`.
+- `review-draft.yml`: on `issues: labeled`. Label `publish` → set the event's `status: "live"`, commit, close issue. Label `discard` → delete the draft file, add post id to `seenPostIds`, close issue. Idempotent.
+- `deploy.yml`: build Astro, deploy to Pages.
 
-### 5.5 Review function
+Secrets: `IG_ACCESS_TOKEN` (free Meta token) and `IG_TOKEN_PAT` (free fine-grained GitHub token, scope "Secrets: write" on this repo only, used solely to save a renewed Instagram token when the refresh returns a new string). Nothing else.
 
-`api/review.ts` on Vercel: `GET /api/review?id=…&action=publish|discard&exp=…&sig=…`. Verifies HMAC and expiry (14 days), then via GitHub API sets `status: "live"` or deletes the draft file. Returns a small branded confirmation page. Idempotent.
+Config (non-secret) in `site.config.ts`: WhatsApp number, site URL, Instagram handle, owner email `owner-email-removed` (shown nowhere; kept for future use; GitHub Issue notifications go to repo watchers: Chetan, plus Balpreet if she is added as a collaborator).
 
 ## 6. Error handling
 
-- Instagram/Claude/network error → run fails, state `consecutiveFailures++`; on 2 → alert email. Nothing is written on a failed run (atomic: compute all changes, then write).
-- Claude returns invalid JSON / schema mismatch → treat post as `draft` with reason "could not read".
+- Instagram/network error → run fails, `consecutiveFailures++`; at 2 → alert issue. Nothing is written on a failed run.
+- Ollama unavailable or returns invalid JSON → post becomes a draft with reason "could not read automatically"; the run still succeeds.
 - Image download fails → event saved with `image: null` (card shows blossom on blush-soft).
-- Malformed event file (manual edit) → Astro schema error fails the Vercel build; the previous deployment stays live.
-- Expired/invalid review link → friendly error page, no change.
+- Malformed event file (manual edit) → Astro schema error fails the build; the previous Pages deployment stays live.
+- Label added to an issue whose draft no longer exists → comment "already handled", close.
 
 ## 7. Testing (TDD throughout)
 
 - **Vitest unit tests** for every unit in 5.3 and `src/lib/*`. Fixtures: the real @strokesandverses captions (full text pulled during implementation) with expected outcomes:
-  - Kinusaiga "BACK ON DEMAND" ×2 → one event, 19 Sept 2026 17:30–19:30 IST, price null.
+  - Kinusaiga "BACK ON DEMAND" ×2 → `parse` high confidence; one event after dedupe, 19 Sept 2026 17:30–19:30 IST, price null.
   - "TWO art forms, ONE mindful Sunday" → Paper Collage + Denim Pocket event, 20 Sept 2026 15:30–17:30.
-  - Kinusaiga 6 Sept 2026 → includes All materials, Frame, Refreshments; price null.
+  - Kinusaiga 6 Sept 2026 ("Date:" / "Time:" labelled format) → includes All materials, Frame, Refreshments; price null.
   - Thank-you posts, "Something beautiful is brewing" teaser, Hardy Sandhu recap → ignore.
-- **Extraction** tested with recorded Claude responses (offline); `npm run test:live` re-runs fixtures against the real API.
-- **Review function**: signature valid/invalid/expired, idempotency, GitHub API mocked.
-- **Playwright** (360px and 1280px): all pages render; every Book button's `href` decodes to the expected WhatsApp text; calendar split with frozen clock; no horizontal overflow; mobile menu keyboard-operable.
+  - Synthetic free-form caption ("join us next sunday evening for pearl art") → `parse` low → `llm` called → draft.
+- **`llm.ts`** tested against a mocked Ollama HTTP server (offline); `npm run test:llm` runs fixtures against a real local Ollama if installed.
+- **Workflows**: `review-draft` logic lives in `scripts/review-draft.ts` and is unit-tested with a temp repo dir; `gh` calls wrapped and mocked.
+- **Playwright** (360px and 1280px): all pages render; every Book button's `href` decodes to the expected WhatsApp text; calendar split with frozen clock; drafts never render; no horizontal overflow; mobile menu keyboard-operable.
 - **Accessibility**: axe on every page, zero serious/critical violations.
 
 ## 8. Out of scope (v1)
 
-Online payments, seat counts, chat-based event editing, shop checkout, CMS/admin UI, multi-language, the call-only number, art therapy and Panchkula/Mumbai pages.
+Online payments, seat counts, chat-based event editing, shop checkout, CMS/admin UI, multi-language, the call-only number, art therapy and Panchkula/Mumbai pages, any paid service.
 
-## 9. Launch checklist (owner actions)
+## 9. Launch checklist (owner actions, all free)
 
-1. Create GitHub repo; connect Vercel.
-2. Meta developer app → Instagram API with Instagram Login → long-lived token for @strokesandverses.
-3. Anthropic API key, Resend account (verified sender domain once domain is bought).
-4. `OWNER_EMAILS` = owner-email-removed (set in `site.config.ts`); add secrets.
-5. Buy domain, point to Vercel.
+1. Create the GitHub repo and push; enable Pages (source: GitHub Actions).
+2. Meta developer app → Instagram API with Instagram Login → long-lived token for @strokesandverses → repo secret `IG_ACCESS_TOKEN`.
+3. Fine-grained GitHub token (this repo, Secrets: write) → repo secret `IG_TOKEN_PAT`.
+4. Create labels `draft`, `publish`, `discard`; watch the repo for issue notifications.
+5. Buy domain, add it in Pages settings, point DNS.
 6. Optional: send a dedicated portrait of Balpreet.
