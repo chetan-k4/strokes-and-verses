@@ -14,13 +14,13 @@ export function reviewDraft(paths: Paths, issueNumber: number, label: string): R
 
   if (label === 'discard') {
     applyChanges(paths, { writeEvents: [], deleteEvents: [], writeDrafts: [], deleteDrafts: [draft.id], state });
-    return { ok: true, changed: true, message: 'Discarded. It won\'t appear on the site.' };
+    return { ok: true, changed: true, message: 'Discarded. It won’t appear on the site.' };
   }
 
   const parsed = EventFieldsSchema.safeParse(draft.event);
   if (!parsed.success) {
     const missing = [...new Set(parsed.error.issues.map((i) => String(i.path[0])))].join(', ');
-    return { ok: false, changed: false, message: `Can't publish yet: ${missing} missing or invalid. Edit \`data/drafts/${draft.id}.json\` on GitHub, then add the \`publish\` label again.` };
+    return { ok: false, changed: false, message: `Can’t publish yet: ${missing} missing or invalid. Edit \`data/drafts/${draft.id}.json\` on GitHub, then add the \`publish\` label again.` };
   }
   const candidate = buildEvent(parsed.data, draft.sources, null);
   const r = dedupe(candidate, readEvents(paths));

@@ -37,7 +37,7 @@ describe('reviewDraft', () => {
   });
   it('discard deletes the draft', () => {
     seed(complete);
-    expect(reviewDraft(p, 7, 'discard')).toEqual({ ok: true, changed: true, message: 'Discarded. It won\'t appear on the site.' });
+    expect(reviewDraft(p, 7, 'discard')).toEqual({ ok: true, changed: true, message: 'Discarded. It won’t appear on the site.' });
     expect(readDrafts(p)).toEqual([]);
   });
   it('is idempotent when the draft is gone', () => {
