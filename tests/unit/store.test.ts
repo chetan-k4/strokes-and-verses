@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mkdtempSync, mkdirSync, readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -35,6 +35,10 @@ describe('store', () => {
     writeFileSync(join(p.eventsDir, '.gitkeep'), '');
     expect(readEvents(p)).toEqual([]);
   });
+  it('throws with filename when JSON is malformed', () => {
+    writeFileSync(join(p.eventsDir, 'bad.json'), '{"id":"Bad"}');
+    expect(() => readEvents(p)).toThrow(/bad\.json/);
+  });
 });
 
 describe('downloadImage', () => {
@@ -43,9 +47,13 @@ describe('downloadImage', () => {
     expect(await downloadImage(p, 'https://cdn/x.jpg', 'e1', fake)).toBe('/images/events/e1.jpg');
     expect(readFileSync(join(p.imagesDir, 'e1.jpg'))).toEqual(Buffer.from([1, 2, 3]));
   });
-  it('returns null on failure or missing url', async () => {
+  it('returns null on failure or missing url and logs warning', async () => {
     const bad = (async () => new Response('no', { status: 403 })) as typeof fetch;
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     expect(await downloadImage(p, 'https://cdn/x.jpg', 'e2', bad)).toBeNull();
     expect(await downloadImage(p, null, 'e3', bad)).toBeNull();
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('image download failed for e2'));
+    expect(warnSpy).not.toHaveBeenCalledWith(expect.stringContaining('e3'));
+    warnSpy.mockRestore();
   });
 });

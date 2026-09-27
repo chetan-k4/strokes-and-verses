@@ -15,12 +15,33 @@ export function defaultPaths(root: string = process.cwd()): Paths {
   };
 }
 
-const readJsonDir = (dir: string) =>
-  existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.json')).sort().map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8'))) : [];
+const readJsonFiles = (dir: string) => {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((f) => f.endsWith('.json'))
+    .sort()
+    .map((f) => ({ file: f, path: join(dir, f), content: readFileSync(join(dir, f), 'utf8') }));
+};
 const writeJson = (path: string, data: unknown) => writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
 
-export const readEvents = (p: Paths): Event[] => readJsonDir(p.eventsDir).map((x) => EventSchema.parse(x));
-export const readDrafts = (p: Paths): Draft[] => readJsonDir(p.draftsDir).map((x) => DraftSchema.parse(x));
+export const readEvents = (p: Paths): Event[] =>
+  readJsonFiles(p.eventsDir).map(({ file, content }) => {
+    try {
+      return EventSchema.parse(JSON.parse(content));
+    } catch (e) {
+      throw new Error(`Invalid ${file}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  });
+
+export const readDrafts = (p: Paths): Draft[] =>
+  readJsonFiles(p.draftsDir).map(({ file, content }) => {
+    try {
+      return DraftSchema.parse(JSON.parse(content));
+    } catch (e) {
+      throw new Error(`Invalid ${file}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  });
+
 export const readState = (p: Paths): State =>
   existsSync(p.statePath) ? StateSchema.parse(JSON.parse(readFileSync(p.statePath, 'utf8'))) : { seenPostIds: [], lastRunAt: null, consecutiveFailures: 0 };
 
@@ -36,10 +57,15 @@ export async function downloadImage(p: Paths, url: string | null, id: string, fe
   if (!url) return null;
   try {
     const res = await fetchImpl(url);
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn(`image download failed for ${id}: HTTP ${res.status}`);
+      return null;
+    }
     writeFileSync(join(p.imagesDir, `${id}.jpg`), Buffer.from(await res.arrayBuffer()));
     return `${p.imagesPublicPrefix}/${id}.jpg`;
-  } catch {
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    console.warn(`image download failed for ${id}: ${message}`);
     return null;
   }
 }
