@@ -24,15 +24,18 @@ jobs:
       - id: review
         run: |
           set +e
-          npm run -s review-draft -- "$ISSUE" "$LABEL" > "$RUNNER_TEMP/msg.txt"
+          npm run -s review-draft -- "$ISSUE" "$LABEL" > "$RUNNER_TEMP/msg.txt" 2>&1
           echo "code=$?" >> "$GITHUB_OUTPUT"
+          if [ ! -s "$RUNNER_TEMP/msg.txt" ]; then
+            echo "Couldn't process this draft — see the workflow run log." > "$RUNNER_TEMP/msg.txt"
+          fi
       - name: Commit
         if: steps.review.outputs.code == '0'
         run: |
           git config user.name "strokes-and-verses-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src/content/events data
-          git diff --cached --quiet || { git commit -m "review: $LABEL draft from issue #$ISSUE"; git push; gh workflow run deploy.yml; }
+          git diff --cached --quiet || { git commit -m "review: $LABEL draft from issue #$ISSUE"; git pull --rebase; git push; gh workflow run deploy.yml; }
       - name: Reply and close
         if: steps.review.outputs.code == '0'
         run: |

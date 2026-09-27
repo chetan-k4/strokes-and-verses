@@ -24,15 +24,17 @@ jobs:
       - id: plan
         run: npm run sync -- --plan
       - if: steps.plan.outputs.needs_llm == 'true'
+        continue-on-error: true
         uses: actions/cache@v4
         with:
           path: ~/.ollama/models
           key: ollama-qwen2.5-3b-instruct
       - if: steps.plan.outputs.needs_llm == 'true'
+        continue-on-error: true
         run: |
           curl -fsSL https://ollama.com/install.sh | sh
           (ollama serve > /tmp/ollama.log 2>&1 &)
-          sleep 5
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:11434 >/dev/null && break; sleep 1; done
           ollama pull qwen2.5:3b-instruct
       - id: run
         run: npm run sync
@@ -49,6 +51,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src/content/events data public/images/events
           git diff --cached --quiet || git commit -m "sync: Instagram $(date -u +%Y-%m-%dT%H:%MZ)"
+          git pull --rebase
           git push
       - name: Rebuild site
         if: success()
