@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PackageCard from '../components/PackageCard.astro';
+import { packages } from '../data/packages';
+---
+<BaseLayout title="Learn" description="Learner packages at Strokes & Verses: First Strokes (8 classes) and Full Canvas (15 classes) to build drawing, sketching, acrylic and watercolour skills.">
+  <section class="section container">
+    <p class="label">Learner packages</p>
+    <h1 class="display">Build your basics, one hour at a time</h1>
+    <p class="title-italic">Drawing, sketching, acrylic and watercolour, with small practice artworks along the way.</p>
+  </section>
+  <section class="container reveal">
+    <div class="grid grid--2">{packages.map((p, i) => <PackageCard pkg={p} featured={i === 1} />)}</div>
+    <p class="muted note">Painting materials are not included in the packages. Balpreet will share a short list of what to bring.</p>
+  </section>
+</BaseLayout>
+<style>.note { margin-top: var(--space-6); }</style>

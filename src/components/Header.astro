@@ -1,0 +1,54 @@
+---
+import { url } from '../lib/url';
+import wordmark from '../assets/logos/sv-wordmark-neon.svg';
+import wordmarkCream from '../assets/logos/sv-wordmark-cream.svg';
+interface Props { theme: 'studio' | 'neon-night' }
+const { theme } = Astro.props;
+const items = [
+  ['Workshops', '/workshops'], ['Classes', '/classes'], ['Learn', '/learn'], ['About', '/about'], ['Shop', '/shop'],
+] as const;
+const current = Astro.url.pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ''), '') || '/';
+const logo = theme === 'neon-night' ? wordmarkCream : wordmark;
+---
+<header class="site-header" data-theme={theme === 'neon-night' ? 'neon-night' : undefined}>
+  <div class="container bar">
+    <a href={url('/')} class="brand" aria-label="Strokes & Verses home">
+      <img src={logo.src} alt="" width="168" height="48" />
+    </a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="main-nav">Menu</button>
+    <nav id="main-nav" aria-label="Main">
+      <ul>
+        {items.map(([label, href]) => (
+          <li><a href={url(href)} aria-current={current.startsWith(href) ? 'page' : undefined}>{label}</a></li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header { position: relative; z-index: 20; border-bottom: 1px solid var(--line); }
+  .bar { display: flex; align-items: center; justify-content: space-between; min-height: 72px; gap: var(--space-4); }
+  .brand img { width: 168px; height: auto; }
+  .menu-btn { font: 700 14px/20px var(--font-sans); color: var(--ink); background: transparent; border: 2px solid var(--line-strong); border-radius: var(--radius-pill); padding: var(--space-2) var(--space-4); min-height: 44px; cursor: pointer; }
+  nav ul { list-style: none; margin: 0; padding: 0; }
+  nav a { color: var(--ink); text-decoration: none; font-weight: 500; display: block; padding: var(--space-3) 0; }
+  nav a[aria-current='page'] { color: var(--neon); }
+  @media (max-width: 767px) {
+    nav { display: none; position: absolute; inset: 100% 0 auto 0; background: var(--canvas); border-bottom: 1px solid var(--line); padding: var(--space-2) var(--space-4) var(--space-4); }
+    nav.open { display: block; }
+    nav a { font-size: 20px; padding: var(--space-3) 0; }
+  }
+  @media (min-width: 768px) {
+    .menu-btn { display: none; }
+    nav ul { display: flex; gap: var(--space-6); }
+  }
+</style>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('.menu-btn');
+  const nav = document.getElementById('main-nav');
+  const set = (open: boolean) => { btn?.setAttribute('aria-expanded', String(open)); nav?.classList.toggle('open', open); };
+  btn?.addEventListener('click', () => set(btn.getAttribute('aria-expanded') !== 'true'));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && btn?.getAttribute('aria-expanded') === 'true') { set(false); btn.focus(); } });
+</script>

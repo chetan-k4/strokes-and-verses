@@ -1,0 +1,8 @@
+@font-face { font-family: 'Sacramento'; src: url('../assets/fonts/Sacramento-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Fraunces'; src: url('../assets/fonts/Fraunces-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Fraunces'; src: url('../assets/fonts/Fraunces-400-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Fraunces'; src: url('../assets/fonts/Fraunces-600.woff2') format('woff2'); font-weight: 600; font-display: swap; }
+@font-face { font-family: 'Bricolage Grotesque'; src: url('../assets/fonts/BricolageGrotesque-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Bricolage Grotesque'; src: url('../assets/fonts/BricolageGrotesque-500.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'Bricolage Grotesque'; src: url('../assets/fonts/BricolageGrotesque-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Bricolage Grotesque'; src: url('../assets/fonts/BricolageGrotesque-800.woff2') format('woff2'); font-weight: 800; font-display: swap; }

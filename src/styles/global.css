@@ -1,0 +1,70 @@
+@import './tokens.css';
+@import './fonts.css';
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--canvas); color: var(--ink); font: 400 16px/24px var(--font-sans); }
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--neon); }
+:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+[data-theme] { background: var(--canvas); color: var(--ink); }
+[hidden] { display: none !important; }
+
+.container { width: min(1120px, 100% - 32px); margin-inline: auto; }
+.section { padding-block: var(--space-12); }
+@media (min-width: 768px) { .section { padding-block: var(--space-16); } }
+
+.label { font: 700 12px/16px var(--font-sans); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-muted); margin: 0 0 var(--space-2); }
+.display { font: 600 clamp(34px, 7vw, 48px)/1.08 var(--font-serif); letter-spacing: -.01em; margin: 0; }
+.headline { font: 600 clamp(26px, 4.5vw, 32px)/1.2 var(--font-serif); margin: 0 0 var(--space-4); }
+.title-italic { font: italic 400 clamp(19px, 3vw, 22px)/1.3 var(--font-serif); color: var(--ink-muted); margin: var(--space-3) 0 0; }
+.script { font: 400 clamp(48px, 10vw, 64px)/1 var(--font-script); color: var(--neon); }
+.muted { color: var(--ink-muted); }
+.small { font-size: 13px; line-height: 18px; }
+
+.skip-link { position: absolute; left: var(--space-4); top: -100px; z-index: 100; background: var(--paper); color: var(--ink); padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill); }
+.skip-link:focus { top: var(--space-4); }
+
+/* Button (from the design system bundle) */
+.sv-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: 44px; font: 700 15px/20px var(--font-sans); padding: var(--space-3) var(--space-6); border-radius: var(--radius-pill); border: 2px solid transparent; cursor: pointer; text-decoration: none; transition: transform 160ms ease-out, background-color 160ms ease-out; }
+.sv-btn:active { transform: scale(0.97); }
+.sv-btn--primary { background: var(--neon); color: var(--on-neon); }
+.sv-btn--primary.is-glow { box-shadow: var(--shadow-glow); }
+.sv-btn--outline { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+.sv-btn--sun { background: var(--sunflower); color: var(--on-sunflower); }
+
+/* Chip */
+.sv-chip { display: inline-flex; align-items: center; font: 700 12px/16px var(--font-sans); letter-spacing: .08em; text-transform: uppercase; padding: 6px var(--space-3); border-radius: var(--radius-pill); background: var(--blush-soft); color: var(--ink); }
+.sv-chip--sun { background: var(--sunflower); color: var(--on-sunflower); }
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: 0; margin: 0; list-style: none; }
+
+/* Date stamp */
+.sv-stamp { flex: none; width: 88px; height: 88px; border-radius: var(--radius-pill); background: var(--neon); color: var(--on-neon); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.sv-stamp b { font: 600 34px/32px var(--font-serif); }
+.sv-stamp span { font: 700 10px/13px var(--font-sans); letter-spacing: .16em; text-transform: uppercase; }
+.sv-stamp--sm { width: 64px; height: 64px; }
+.sv-stamp--sm b { font-size: 24px; line-height: 24px; }
+
+/* Cards */
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
+.grid { display: grid; gap: var(--space-6); }
+@media (min-width: 640px) { .grid--2 { grid-template-columns: repeat(2, 1fr); } .grid--3 { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 960px) { .grid--3 { grid-template-columns: repeat(3, 1fr); } }
+
+/* Reveal: only hides content once JS has marked the page as motion-capable. */
+.js-motion .reveal { opacity: 0; transform: translateY(8px); transition: opacity 280ms ease-out, transform 280ms ease-out; }
+.js-motion .reveal.is-visible { opacity: 1; transform: none; }
+
+@keyframes sv-light-up {
+  0% { opacity: 0.25; filter: drop-shadow(0 0 0 transparent); }
+  35% { opacity: 1; filter: drop-shadow(0 0 18px var(--neon-glow)); }
+  45% { opacity: 0.55; }
+  60%, 100% { opacity: 1; filter: drop-shadow(0 0 10px var(--neon-glow)); }
+}
+.hero-mark { animation: sv-light-up 900ms ease-out 150ms 1 both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .hero-mark { filter: drop-shadow(0 0 10px var(--neon-glow)); }
+  .js-motion .reveal { opacity: 1; transform: none; }
+}

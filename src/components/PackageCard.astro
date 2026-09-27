@@ -1,0 +1,27 @@
+---
+import Button from './Button.astro';
+import type { Package } from '../data/packages';
+import { whatsappLink } from '../lib/whatsappLink';
+import blossom from '../assets/logos/sv-blossom-neon.svg';
+interface Props { pkg: Package; featured?: boolean }
+const { pkg, featured = false } = Astro.props;
+const rupees = (n: number) => `₹${n.toLocaleString('en-IN')}`;
+---
+<article class:list={['card', 'pkg', { featured }]} data-testid="package-card">
+  <p class="label">{pkg.classes} classes · 1 hour each</p>
+  <h3>{pkg.name}</h3>
+  <p class="price">{pkg.wasPrice && <s>{rupees(pkg.wasPrice)}</s>} <strong>{rupees(pkg.price)}</strong></p>
+  <p class="muted">{pkg.summary}</p>
+  <ul>{pkg.points.map((p) => <li><img src={blossom.src} alt="" width="16" height="16" />{p}</li>)}</ul>
+  <Button href={whatsappLink({ kind: 'package', name: pkg.name })} variant={featured ? 'primary' : 'outline'} external testId="book-package">Enquire on WhatsApp</Button>
+</article>
+<style>
+  .pkg { padding: var(--space-8) var(--space-6); display: grid; gap: var(--space-3); justify-items: start; }
+  .featured { border: 2px solid var(--neon); }
+  h3 { font: 600 32px/38px var(--font-serif); margin: 0; }
+  .price { margin: 0; font: 600 28px/32px var(--font-serif); }
+  .price s { color: var(--ink-muted); font-size: 20px; margin-right: var(--space-2); }
+  p { margin: 0; }
+  ul { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-2); }
+  li { display: flex; gap: var(--space-2); align-items: center; }
+</style>

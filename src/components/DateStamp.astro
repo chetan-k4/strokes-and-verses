@@ -1,0 +1,9 @@
+---
+import { formatDateStamp, formatLongDate } from '../lib/eventDates';
+interface Props { iso: string; size?: 'md' | 'sm' }
+const { iso, size = 'md' } = Astro.props;
+const s = formatDateStamp(iso);
+---
+<div class:list={['sv-stamp', { 'sv-stamp--sm': size === 'sm' }]} role="img" aria-label={formatLongDate(iso)}>
+  <span aria-hidden="true">{s.weekday}</span><b aria-hidden="true">{s.day}</b><span aria-hidden="true">{s.month}</span>
+</div>
