@@ -1,5 +1,6 @@
 import { site } from '../../src/site.config';
 import type { Extraction } from './types';
+import { matchArtForms } from './artForms';
 
 export type LlmOptions = { baseUrl?: string; model?: string; fetchImpl?: typeof fetch };
 
@@ -41,13 +42,15 @@ export async function llmExtract(caption: string, postedAt: string, opts: LlmOpt
     const hhmm = (t: unknown) => (typeof t === 'string' && /^\d{2}:\d{2}$/.test(t) ? t : null);
     const start = date && hhmm(a.startTime) ? `${date}T${hhmm(a.startTime)}:00+05:30` : undefined;
     const end = start && hhmm(a.endTime) ? `${date}T${hhmm(a.endTime)}:00+05:30` : null;
-    const artForm = typeof a.artForm === 'string' && a.artForm.trim() ? a.artForm.trim() : undefined;
+    const rawArtForm = typeof a.artForm === 'string' && a.artForm.trim() ? a.artForm.trim() : undefined;
+    const normalizedForms = rawArtForm ? matchArtForms(rawArtForm) : [];
+    const artForm = normalizedForms.length > 0 ? normalizedForms.join(' & ') : rawArtForm;
     return {
       isAnnouncement: true, confidence: 'low', needsFallback: false,
       event: {
         ...(artForm ? { artForm, title: `${artForm} Workshop` } : {}),
         ...(start ? { start, end } : {}),
-        price: typeof a.price === 'number' && a.price >= 100 ? Math.round(a.price) : null,
+        price: typeof a.price === 'number' && a.price >= 100 && a.price <= 100000 ? Math.round(a.price) : null,
         includes: [], venue: site.venue, description: '',
       },
       reasons: ['read by the local model; please check'],

@@ -31,4 +31,17 @@ describe('llmExtract', () => {
     expect(x).toMatchObject({ isAnnouncement: true, confidence: 'low', event: {} });
     expect(x.reasons[0]).toMatch(/could not read automatically/);
   });
+  it('normalizes raw artForm through matchArtForms', async () => {
+    const x = await llmExtract('workshop', '2026-09-25T18:00:00+05:30', {
+      fetchImpl: reply({ isAnnouncement: true, artForm: 'kinusaiga', date: '2026-10-04', startTime: '17:00', endTime: null, price: null }),
+    });
+    expect(x.event?.artForm).toBe('Kinusaiga');
+    expect(x.event?.title).toBe('Kinusaiga Workshop');
+  });
+  it('rejects prices outside 100–100000 range', async () => {
+    const x = await llmExtract('c', '2026-09-25T18:00:00+05:30', {
+      fetchImpl: reply({ isAnnouncement: true, artForm: 'Pearl Art', date: '2026-10-04', startTime: '17:00', endTime: null, price: 250000 }),
+    });
+    expect(x.event?.price).toBe(null);
+  });
 });
