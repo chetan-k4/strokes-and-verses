@@ -6,7 +6,7 @@ test('header navigation lists every page', async ({ page, isMobile }) => {
   if (isMobile) await page.getByRole('button', { name: 'Menu' }).click();
   const nav = page.getByRole('navigation', { name: 'Main' });
   for (const name of ['Workshops', 'Classes', 'Learn', 'About', 'Shop']) {
-    await expect(nav.getByRole('link', { name })).toBeVisible();
+    await expect(nav.getByRole('link', { name, exact: true })).toBeVisible();
   }
 });
 
