@@ -5,7 +5,7 @@ test('about: portrait, quote, timeline, values', async ({ page }) => {
   await page.goto('/about');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Balpreet');
   await expect(page.getByRole('img', { name: /Balpreet/ })).toBeVisible();
-  await expect(page.getByRole('img', { name: /Balpreet/ })).toHaveAttribute('src', /balpreet-portrait/);
+  await expect(page.getByRole('img', { name: /Balpreet/ })).toHaveAttribute('src', /balpreet-with-painting/);
   await expect(page.getByTestId('timeline').getByRole('listitem')).toHaveCount(4);
   await expect(page.getByTestId('values').getByRole('listitem')).toHaveCount(3);
   await expect(page.locator('main')).toContainText('Fortis');
