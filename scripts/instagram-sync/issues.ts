@@ -24,6 +24,10 @@ export function draftIssueTitle(d: Draft): string {
   return title && start ? `Draft: ${title} · ${formatLongDate(start)}` : 'Draft: new Instagram post needs a look';
 }
 
+// Escape any run of 3+ backticks in the caption (e.g. someone pasted a code block)
+// so it can never be read as closing our fence early.
+const escapeFence = (s: string) => s.replace(/`{3,}/g, (run) => run.split('').join('​'));
+
 export function draftIssueBody(d: Draft, permalink: string): string {
   const e = d.event;
   const row = (k: string, v: string | undefined) => `| ${k} | ${v ?? '**missing**'} |`;
@@ -40,7 +44,9 @@ export function draftIssueBody(d: Draft, permalink: string): string {
     '',
     `**Post:** ${permalink}`,
     '',
-    d.caption.split('\n').map((l) => `> ${l}`).join('\n'),
+    '```text',
+    escapeFence(d.caption),
+    '```',
     '',
     '---',
     '**To publish:** add the `publish` label. **To drop it:** add the `discard` label.',

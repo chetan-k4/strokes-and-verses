@@ -25,9 +25,25 @@ describe('draft issue text', () => {
     expect(b).toContain('| Time | 5 pm |');
     expect(b).toContain('| Price | Ask for fee |');
     expect(b).toContain('read by the local model; please check');
-    expect(b).toContain('> Pearl art next sunday evening');
+    expect(b).toContain('```text\nPearl art next sunday evening\n```');
     expect(b).toContain('https://www.instagram.com/p/123/');
     expect(b).toContain('`publish`');
     expect(b).toContain('data/drafts/draft-123.json');
+  });
+  it('fences the caption so an @mention in it does not ping anyone', () => {
+    const b = draftIssueBody({ ...draft, caption: 'Ping @strokesandverses to book!' }, 'https://www.instagram.com/p/123/');
+    const fenceStart = b.indexOf('```text');
+    expect(fenceStart).toBeGreaterThan(-1);
+    const fenceEnd = b.indexOf('```', fenceStart + 3);
+    const mentionIndex = b.indexOf('@strokesandverses');
+    expect(mentionIndex).toBeGreaterThan(fenceStart);
+    expect(mentionIndex).toBeLessThan(fenceEnd);
+  });
+  it('escapes a triple-backtick inside the caption so it cannot close the fence early', () => {
+    const b = draftIssueBody({ ...draft, caption: 'Some text\n```\nmore text' }, 'https://www.instagram.com/p/123/');
+    expect(b).toContain('more text');
+    // exactly one standalone "```" line: the real closing fence. Any backticks
+    // from inside the caption must have been escaped so they don't count as one.
+    expect((b.match(/^```$/gm) ?? []).length).toBe(1);
   });
 });

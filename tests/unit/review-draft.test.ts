@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { mkdtempSync, mkdirSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, existsSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { reviewDraft } from '../../scripts/review-draft';
@@ -46,5 +46,22 @@ describe('reviewDraft', () => {
   it('ignores other labels', () => {
     seed(complete);
     expect(reviewDraft(p, 7, 'bug')).toEqual({ ok: true, changed: false, message: 'Nothing to do for label "bug".' });
+  });
+  it('publishing a draft already on the site (dedupe skip) says so, and still removes the draft', () => {
+    seed(complete);
+    reviewDraft(p, 7, 'publish');
+    // Re-add the same issue as a draft pointing at the same, already-published post.
+    applyChanges(p, { writeEvents: [], deleteEvents: [], deleteDrafts: [], state: readState(p),
+      writeDrafts: [{ id: 'draft-9', event: complete, sources: [source], reasons: [], caption: 'c', draftIssue: 7 }] });
+    const r = reviewDraft(p, 7, 'publish');
+    expect(r).toEqual({ ok: true, changed: true, message: 'Already on the site: **Pearl Art Workshop** on Sunday 4 October.' });
+    expect(readDrafts(p)).toEqual([]);
+  });
+  it('an unrelated malformed draft file does not block publishing a valid one', () => {
+    seed(complete);
+    writeFileSync(`${p.draftsDir}/draft-broken.json`, '{ not valid json');
+    const r = reviewDraft(p, 7, 'publish');
+    expect(r).toEqual({ ok: true, changed: true, message: 'Published **Pearl Art Workshop** on Sunday 4 October. The site will update in a few minutes.' });
+    expect(readEvents(p).map((e) => e.id)).toEqual(['pearl-art-2026-10-04-1700']);
   });
 });
