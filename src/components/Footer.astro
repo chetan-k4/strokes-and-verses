@@ -1,0 +1,38 @@
+---
+import { site } from '../site.config';
+import { url } from '../lib/url';
+import { whatsappLink } from '../lib/whatsappLink';
+import monogram from '../assets/logos/sv-monogram-neon.svg';
+---
+<footer class="site-footer" data-theme="neon-night">
+  <div class="container cols">
+    <div>
+      <img src={monogram.src} alt="" width="64" height="64" />
+      <p class="small muted">Strokes &amp; Verses Studio · by Balpreet Kaur</p>
+    </div>
+    <address>
+      <p class="label">Visit</p>
+      {site.addressLines.map((l) => <span>{l}<br /></span>)}
+      <a href={site.mapUrl} target="_blank" rel="noopener">Open in Google Maps</a>
+    </address>
+    <div>
+      <p class="label">Say hello</p>
+      <a href={whatsappLink({ kind: 'general' })} target="_blank" rel="noopener">WhatsApp {site.whatsappDisplay}</a><br />
+      <a href={site.instagramUrl} target="_blank" rel="noopener">Instagram {site.instagramHandle}</a>
+    </div>
+    <div>
+      <p class="label">Explore</p>
+      <a href={url('/workshops')}>Workshops</a><br /><a href={url('/classes')}>Classes</a><br /><a href={url('/learn')}>Learn</a>
+    </div>
+  </div>
+  <p class="container small muted tag">#StrokesAndVerses</p>
+</footer>
+
+<style>
+  .site-footer { padding-block: var(--space-12) var(--space-16); margin-top: var(--space-12); }
+  .cols { display: grid; gap: var(--space-8); }
+  @media (min-width: 768px) { .cols { grid-template-columns: 1.2fr 1fr 1fr 1fr; } }
+  address { font-style: normal; }
+  a { color: var(--ink); line-height: 32px; }
+  .tag { margin-top: var(--space-8); }
+</style>

@@ -1,0 +1,10 @@
+---
+interface Props { href: string; variant?: 'primary' | 'outline' | 'sun'; glow?: boolean; external?: boolean; testId?: string; class?: string }
+const { href, variant = 'primary', glow = false, external = false, testId, class: extra = '' } = Astro.props;
+---
+<a
+  class:list={['sv-btn', `sv-btn--${variant}`, { 'is-glow': glow }, extra]}
+  href={href}
+  data-testid={testId}
+  {...(external ? { target: '_blank', rel: 'noopener' } : {})}
+><slot /></a>
